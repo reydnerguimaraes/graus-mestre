@@ -226,7 +226,7 @@ function separarComplementoMaior(complemento){
         return false;
     }
 
-    return /^(?:2|4|5|6|7M|7|9|11|13)/.test(complemento);
+    return /^(?:2|4|5|6|7M|7|9|11|13|add2|add9|add11|7sus2|7sus4|9sus2|9sus4)/.test(complemento);
 
 }
 
@@ -548,9 +548,16 @@ function encontrarGrau(
     // PADRONIZA MAJ7 PARA 7M
     // ------------------------------------
 
-    if(complemento === "maj7"){
-        complemento = "7M";
+    if(complemento.startsWith("maj")){
+        complemento = complemento.replace(/^maj/, "");
+        complemento = complemento === "7" ? "7M" : "7M" + complemento;
     }
+
+    complemento = complemento
+        .replace(/^7M7/, "7M")
+        .replace(/^7M9/, "7M(9)")
+        .replace(/^7M11/, "7M(11)")
+        .replace(/^7M13/, "7M(13)");
 
 
     // ------------------------------------
@@ -871,7 +878,9 @@ function acordePertenceAoCampo(acorde, tom){
 
     const ehDiminuto =
         complemento.startsWith("dim") ||
-        complemento.startsWith("°");
+        complemento.startsWith("°") ||
+        complemento.startsWith("ø") ||
+        complemento.startsWith("m7b5");
 
     // i
     if(indice === 0){
@@ -925,7 +934,9 @@ if(indice === 4){
 
     const ehDiminuto =
         complemento.startsWith("dim") ||
-        complemento.startsWith("°");
+        complemento.startsWith("°") ||
+        complemento.startsWith("ø") ||
+        complemento.startsWith("m7b5");
 
 
     // ----------------------------------------

@@ -50,7 +50,7 @@ let assinaturaTomIgnorada = "";
 // ------------------------------------
 
 const acordeCompleto =
-/^[A-Ga-g](?:#|b)?(?:(?:7M)|(?:maj(?:7|9|11|13))|(?:m(?:2|4|6|7|9|11|13)?)|(?:dim7?|°7?|ø|aug|\+|sus(?:2|4))|(?:2|4|5|6|7|9|11|13))?(?:(?:#|b)(?:5|9|11|13)|\((?:#|b)(?:5|9|11|13)\))*(?:\/[A-Ga-g](?:#|b)?)?$/i;
+/^[A-Ga-g](?:#|b)?(?:(?:7M|maj(?:7|9|11|13)|m(?:2|4|6|7|9|11|13)?|m7(?:b5|\(b5\))|dim7?|°7?|ø7?|aug|\+|sus(?:2|4)|7sus(?:2|4)|9sus(?:2|4)|add(?:2|9|11)|(?:2|4|5|6|7|9|11|13))(?:\((?:2|4|5|6|7|7M|9|11|13|add(?:2|9|11)|(?:#|b)(?:5|9|11|13))(?:,(?:2|4|5|6|7|7M|9|11|13|add(?:2|9|11)|(?:#|b)(?:5|9|11|13)))*\))?(?:(?:#|b)(?:5|9|11|13))*)?(?:\/(?:[A-Ga-g](?:#|b)?|9))?$/i;
 
 function normalizarAcorde(acorde){
 
@@ -90,6 +90,12 @@ function normalizarAcorde(acorde){
     );
 
 
+    // Padroniza algumas grafias comuns
+    acorde = acorde.replace(/maj7/gi, "7M");
+    acorde = acorde.replace(/ø7/gi, "ø");
+    acorde = acorde.replace(/m7\(b5\)/gi, "m7b5");
+
+
     return acorde;
 }
 
@@ -113,7 +119,7 @@ function destacarGraus(texto){
             // 1, 4, 6m, 2m7
 
  const ehGrau =
-    /^(?:#|b)?(?:[ivIV]+|[1-7](?:m)?)(?:2|4|5|6|7M|7|9|11|13|maj7|sus2|sus4|dim7?|°7?|ø|aug|\+|\([^)]*\))?(?:\/(?:#|b)?(?:[ivIV]+|[1-7]|[A-G](?:#|b)?))?$/.test(parte);
+    /^(?:#|b)?(?:[ivIV]+|[1-7](?:m)?)(?:2|4|5|6|7M|7|9|11|13|add2|add9|add11|sus2|sus4|7sus2|7sus4|9sus2|9sus4|dim7?|°7?|ø|aug|\+|m7b5|\([^)]*\))?(?:\/(?:#|b)?(?:[ivIV]+|[1-7]|[A-G](?:#|b)?|9))?$/.test(parte);
 
 
             if(ehGrau){
@@ -137,7 +143,7 @@ function destacarGraus(texto){
             // IV 13
 
            const ehExtensao =
-    /^(?:2|4|5|6|7|7M|9|11|13)(?:(?:#|b)(?:5|9|11|13))?$/.test(parte);
+    /^(?:2|4|5|6|7|7M|9|11|13)(?:\([^)]*\))?(?:(?:#|b)(?:5|9|11|13))*$/.test(parte);
 
 
             if(ehExtensao){
