@@ -226,7 +226,7 @@ function separarComplementoMaior(complemento){
         return false;
     }
 
-    return /^(?:2|4|6|7M|7|9|11|13)/.test(complemento);
+    return /^(?:2|4|5|6|7M|7|9|11|13)/.test(complemento);
 
 }
 
@@ -825,6 +825,10 @@ function acordePertenceAoCampo(acorde, tom){
     const nota = resultado[1];
     let complemento = resultado[2];
 
+    // Power chord (ex.: G5) não é maior nem menor.
+    // Para validação do campo, consideramos a fundamental.
+    const ehPowerChord = complemento === "5";
+
 
     // Procura a nota exatamente como grau da escala
 
@@ -836,6 +840,10 @@ function acordePertenceAoCampo(acorde, tom){
 
     if(indice === -1){
         return false;
+    }
+
+    if(ehPowerChord){
+        return true;
     }
 
 

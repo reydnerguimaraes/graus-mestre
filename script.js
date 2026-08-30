@@ -50,7 +50,7 @@ let assinaturaTomIgnorada = "";
 // ------------------------------------
 
 const acordeCompleto =
-/^[A-Ga-g](?:#|b)?(?:(?:7M)|(?:maj(?:7|9|11|13))|(?:m(?:2|4|6|7|9|11|13)?)|(?:dim7?|°7?|ø|aug|\+|sus(?:2|4))|(?:2|4|6|7|9|11|13))?(?:(?:#|b)(?:5|9|11|13)|\((?:#|b)(?:5|9|11|13)\))*(?:\/[A-Ga-g](?:#|b)?)?$/i;
+/^[A-Ga-g](?:#|b)?(?:(?:7M)|(?:maj(?:7|9|11|13))|(?:m(?:2|4|6|7|9|11|13)?)|(?:dim7?|°7?|ø|aug|\+|sus(?:2|4))|(?:2|4|5|6|7|9|11|13))?(?:(?:#|b)(?:5|9|11|13)|\((?:#|b)(?:5|9|11|13)\))*(?:\/[A-Ga-g](?:#|b)?)?$/i;
 
 function normalizarAcorde(acorde){
 
@@ -113,7 +113,7 @@ function destacarGraus(texto){
             // 1, 4, 6m, 2m7
 
  const ehGrau =
-    /^(?:#|b)?(?:[ivIV]+|[1-7](?:m)?)(?:2|4|6|7M|7|9|11|13|maj7|sus2|sus4|dim7?|°7?|ø|aug|\+|\([^)]*\))?(?:\/(?:#|b)?(?:[ivIV]+|[1-7]|[A-G](?:#|b)?))?$/.test(parte);
+    /^(?:#|b)?(?:[ivIV]+|[1-7](?:m)?)(?:2|4|5|6|7M|7|9|11|13|maj7|sus2|sus4|dim7?|°7?|ø|aug|\+|\([^)]*\))?(?:\/(?:#|b)?(?:[ivIV]+|[1-7]|[A-G](?:#|b)?))?$/.test(parte);
 
 
             if(ehGrau){
@@ -137,7 +137,7 @@ function destacarGraus(texto){
             // IV 13
 
            const ehExtensao =
-    /^(?:2|4|6|7|7M|9|11|13)(?:(?:#|b)(?:5|9|11|13))?$/.test(parte);
+    /^(?:2|4|5|6|7|7M|9|11|13)(?:(?:#|b)(?:5|9|11|13))?$/.test(parte);
 
 
             if(ehExtensao){
@@ -527,6 +527,15 @@ function acordeTemQualidadeMenor(acorde){
 }
 
 
+function acordeEhPowerChord(acorde){
+
+    const principal =
+        acorde.split("/")[0];
+
+    return /^[A-G](?:#|b)?5$/.test(principal);
+}
+
+
 function acordeEhTonico(acorde, candidato){
 
     const raiz =
@@ -542,6 +551,10 @@ function acordeEhTonico(acorde, candidato){
         ) === -1
     ){
         return false;
+    }
+
+    if(acordeEhPowerChord(acorde)){
+        return true;
     }
 
     if(tomEhMenor(candidato)){
