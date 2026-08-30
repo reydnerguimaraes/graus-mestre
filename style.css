@@ -1,0 +1,857 @@
+/* ========================================
+   GERAL
+======================================== */
+
+body {
+    background: #0f172a;
+    color: white;
+    font-family: Arial, sans-serif;
+    text-align: center;
+    margin-top: 80px;
+}
+
+h1 {
+    color: #38bdf8;
+    font-size: 48px;
+}
+
+p {
+    font-size: 20px;
+}
+
+.container {
+    width: 90%;
+    max-width: 800px;
+    margin: auto;
+}
+
+
+/* ========================================
+   TEXTAREAS
+======================================== */
+
+textarea {
+    width: 100%;
+    height: 180px;
+
+    margin: 15px 0;
+    padding: 18px;
+
+    box-sizing: border-box;
+
+    background: rgba(15, 23, 42, 0.72);
+
+    color: #f1f5f9;
+
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 12px;
+
+    font-size: 16px;
+    font-family: "Courier New", monospace;
+
+    line-height: 1.55;
+
+    white-space: pre;
+
+    outline: none;
+
+    resize: vertical;
+
+    transition: 0.2s ease;
+}
+
+
+textarea:focus {
+    border-color: rgba(56, 189, 248, 0.45);
+
+    box-shadow:
+        0 0 0 3px rgba(56, 189, 248, 0.06);
+}
+
+
+textarea::placeholder {
+    color: rgba(255, 255, 255, 0.42);
+}
+
+
+/* ========================================
+   CONTROLES DO TOPO
+======================================== */
+
+.controles-topo {
+    display: flex;
+
+    justify-content: center;
+    align-items: flex-start;
+
+    gap: 30px;
+
+    margin-top: 20px;
+    margin-bottom: 22px;
+
+    flex-wrap: wrap;
+}
+
+.controle-item {
+    width: 150px;
+
+    display: flex;
+    flex-direction: column;
+
+    align-items: center;
+
+    text-align: center;
+}
+
+.controle-item label {
+    margin: 0 0 10px 0;
+
+    text-align: center;
+
+    font-size: 14px;
+}
+
+.controle-item .tom-container,
+.controle-item .seletor-container {
+    margin: 0;
+}
+
+.controle-item .tom-botao,
+.controle-item .seletor-botao {
+    min-height: 38px;
+}
+
+
+/* ========================================
+   SELETOR DE TOM
+======================================== */
+
+.tom-container {
+    position: relative;
+
+    display: flex;
+    justify-content: center;
+
+    margin-top: 8px;
+    margin-bottom: 12px;
+}
+
+.tom-botao {
+    width: auto;
+    min-width: 75px;
+
+    padding: 9px 15px;
+
+    background: rgba(255, 255, 255, 0.07);
+
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+
+    border: 1px solid rgba(255, 255, 255, 0.16);
+    border-radius: 10px;
+
+    color: #ffffff;
+
+    font-size: 15px;
+    font-weight: 600;
+
+    cursor: pointer;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    transition: 0.2s ease;
+}
+
+.tom-botao:hover {
+    background: rgba(255, 255, 255, 0.11);
+
+    border-color: rgba(255, 255, 255, 0.28);
+}
+
+.tom-menu {
+    display: none;
+
+    position: absolute;
+
+    top: 48px;
+
+    width: 210px;
+
+    padding: 10px;
+
+    background: rgba(20, 20, 20, 0.94);
+
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
+
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    border-radius: 12px;
+
+    z-index: 1000;
+
+    box-shadow: 0 12px 35px rgba(0, 0, 0, 0.35);
+}
+
+.tom-menu.aberto {
+    display: block;
+}
+
+.tom-menu button {
+    padding: 8px 4px;
+
+    background: rgba(255, 255, 255, 0.05);
+
+    border: 1px solid transparent;
+    border-radius: 7px;
+
+    color: #ffffff;
+
+    font-size: 13px;
+
+    cursor: pointer;
+
+    transition: 0.18s ease;
+}
+
+.tom-menu button:hover {
+    background: rgba(255, 255, 255, 0.12);
+
+    border-color: rgba(255, 255, 255, 0.15);
+}
+
+.tom-menu button.ativo {
+    background: rgba(255, 255, 255, 0.16);
+
+    border-color: rgba(255, 255, 255, 0.28);
+}
+
+
+.tom-tipo {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px;
+    margin-bottom: 8px;
+}
+
+.tom-tipo .tom-tipo-botao {
+    font-weight: 700;
+    font-size: 12px;
+}
+
+.lista-tons {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 6px;
+}
+
+.oculto {
+    display: none !important;
+}
+
+
+/* ========================================
+   ANÁLISE DE TOM MENOR
+======================================== */
+
+.modo-analise-menor {
+    width: fit-content;
+    max-width: 100%;
+
+    margin: -5px auto 18px auto;
+    padding: 10px 12px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
+
+    gap: 8px;
+
+    background: rgba(255, 255, 255, 0.05);
+
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 10px;
+
+    font-size: 13px;
+}
+
+.modo-analise-botoes {
+    display: flex;
+    gap: 6px;
+}
+
+.modo-analise-menor button,
+.alerta-tom button {
+    padding: 6px 10px;
+
+    background: rgba(255, 255, 255, 0.10);
+
+    border: 1px solid rgba(255, 255, 255, 0.22);
+    border-radius: 7px;
+
+    color: #ffffff;
+
+    font-size: 12px;
+    font-weight: 700;
+
+    cursor: pointer;
+
+    transition: 0.18s ease;
+}
+
+.modo-analise-menor button:hover,
+.alerta-tom button:hover {
+    background: rgba(255, 255, 255, 0.18);
+}
+
+.modo-analise-menor button.ativo {
+    border-color: rgba(56, 189, 248, 0.70);
+
+    box-shadow:
+        0 0 0 2px rgba(56, 189, 248, 0.08);
+}
+
+.modo-analise-menor small {
+    width: 100%;
+
+    color: rgba(255, 255, 255, 0.58);
+
+    font-size: 11px;
+}
+
+
+/* ========================================
+   ALERTA DE TOM DETECTADO
+======================================== */
+
+.alerta-tom {
+    width: fit-content;
+    max-width: calc(100% - 24px);
+
+    margin: 0 auto 18px auto;
+    padding: 11px 13px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
+
+    gap: 10px;
+
+    background: #1e293b;
+
+    border: 1px solid rgba(250, 204, 21, 0.60);
+    border-radius: 10px;
+
+    color: #ffffff;
+
+    font-size: 13px;
+    font-weight: 600;
+
+    box-shadow:
+        0 8px 25px rgba(0, 0, 0, 0.35);
+}
+
+.alerta-tom .botoes-pergunta {
+    display: flex;
+    gap: 7px;
+}
+
+
+/* ========================================
+   FORMATO E BAIXO
+======================================== */
+
+.seletor-container {
+    position: relative;
+
+    display: flex;
+    justify-content: center;
+
+    margin-top: 8px;
+    margin-bottom: 12px;
+}
+
+.seletor-botao {
+    width: auto;
+    min-width: 95px;
+
+    padding: 9px 15px;
+
+    background: rgba(255, 255, 255, 0.07);
+
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+
+    border: 1px solid rgba(255, 255, 255, 0.16);
+    border-radius: 10px;
+
+    color: #ffffff;
+
+    font-size: 14px;
+    font-weight: 600;
+
+    cursor: pointer;
+
+    transition: 0.2s ease;
+}
+
+.seletor-botao:hover {
+    background: rgba(255, 255, 255, 0.11);
+
+    border-color: rgba(255, 255, 255, 0.28);
+}
+
+.seletor-menu {
+    display: none;
+
+    position: absolute;
+
+    top: 46px;
+
+    min-width: 130px;
+
+    padding: 7px;
+
+    background: rgba(20, 20, 20, 0.94);
+
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
+
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    border-radius: 10px;
+
+    z-index: 1000;
+
+    box-shadow: 0 12px 35px rgba(0, 0, 0, 0.35);
+}
+
+.seletor-menu.aberto {
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 5px;
+}
+
+.seletor-menu button {
+    padding: 8px 12px;
+
+    background: rgba(255, 255, 255, 0.05);
+
+    border: 1px solid transparent;
+    border-radius: 7px;
+
+    color: #ffffff;
+
+    font-size: 13px;
+
+    cursor: pointer;
+
+    transition: 0.18s ease;
+}
+
+.seletor-menu button:hover {
+    background: rgba(255, 255, 255, 0.12);
+
+    border-color: rgba(255, 255, 255, 0.15);
+}
+
+.seletor-menu button.ativo {
+    background: rgba(255, 255, 255, 0.16);
+
+    border-color: rgba(255, 255, 255, 0.28);
+}
+
+
+/* ========================================
+   PRÉVIAS
+======================================== */
+
+.preview-box {
+    margin-top: 15px;
+
+    padding: 18px;
+
+    background: transparent;
+
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 12px;
+
+    text-align: center;
+}
+
+.preview-box h3 {
+    margin-top: 0;
+    margin-bottom: 14px;
+
+    text-align: center;
+}
+
+#previewGraus {
+    display: flex;
+
+    flex-wrap: wrap;
+
+    justify-content: center;
+    align-items: center;
+
+    gap: 10px;
+
+    line-height: 1.6;
+}
+
+#previewGraus h3 {
+    width: 100%;
+}
+
+#previewBaixo {
+    text-align: center;
+
+    line-height: 1.8;
+}
+
+.grau-preview {
+    padding: 6px 12px;
+
+    background: transparent;
+
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 8px;
+}
+
+
+/* ========================================
+   BOTÃO CONVERTER
+======================================== */
+
+#converter {
+    min-width: 150px;
+
+    padding: 13px 24px;
+
+    margin: 5px auto 10px auto;
+
+    display: block;
+
+    background: rgba(255, 255, 255, 0.09);
+
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+
+    border: 1px solid rgba(255, 255, 255, 0.16);
+    border-radius: 14px;
+
+    color: #ffffff;
+
+    font-size: 15px;
+    font-weight: 600;
+
+    cursor: pointer;
+
+    transition: 0.2s ease;
+}
+
+#converter:hover {
+    background: rgba(255, 255, 255, 0.15);
+
+    border-color: rgba(255, 255, 255, 0.28);
+
+    transform: translateY(-1px);
+}
+
+#converter:active {
+    transform: translateY(0);
+
+    background: rgba(255, 255, 255, 0.18);
+}
+
+
+/* ========================================
+   BOTÃO COPIAR
+======================================== */
+
+.botao-copiar {
+    position: relative;
+
+    width: 58px;
+    height: 48px;
+
+    display: flex;
+
+    align-items: center;
+    justify-content: center;
+
+    margin: 14px auto 0 auto;
+
+    padding: 0;
+
+    background: rgba(255, 255, 255, 0.09);
+
+    border: 1px solid rgba(255, 255, 255, 0.16);
+    border-radius: 14px;
+
+    cursor: pointer;
+
+    transition: 0.2s ease;
+}
+
+.botao-copiar svg {
+    width: 26px;
+    height: 26px;
+
+    fill: none;
+
+    stroke: white;
+    stroke-width: 1.8;
+
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+.botao-copiar:hover {
+    background: rgba(255, 255, 255, 0.15);
+
+    border-color: rgba(255, 255, 255, 0.28);
+
+    transform: translateY(-1px);
+}
+
+.tooltip-copiar {
+    position: absolute;
+
+    bottom: 58px;
+    left: 50%;
+
+    transform: translateX(-50%);
+
+    padding: 7px 10px;
+
+    background: rgba(10, 10, 10, 0.95);
+
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 8px;
+
+    color: white;
+
+    font-size: 13px;
+    font-weight: 500;
+
+    white-space: nowrap;
+
+    opacity: 0;
+    visibility: hidden;
+
+    pointer-events: none;
+
+    transition: 0.15s ease;
+}
+
+.botao-copiar:hover .tooltip-copiar {
+    opacity: 1;
+    visibility: visible;
+}
+
+
+/* ========================================
+   CELULAR
+======================================== */
+
+@media (max-width: 600px) {
+
+    body {
+        margin-top: 40px;
+    }
+
+    h1 {
+        font-size: 38px;
+    }
+
+    .controles-topo {
+        gap: 15px;
+    }
+
+    .controle-item {
+        width: 120px;
+    }
+
+}
+
+/* ========================================
+   RESULTADO FORMATADO
+======================================== */
+
+.saida-formatada {
+    width: 100%;
+    min-height: 220px;
+
+    margin: 15px 0;
+    padding: 20px;
+
+    box-sizing: border-box;
+
+    background: rgba(15, 23, 42, 0.72);
+
+    color: #f1f5f9;
+
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 12px;
+
+    text-align: left;
+
+    font-family: "Courier New", monospace;
+    font-size: 17px;
+
+    line-height: 1.6;
+
+    white-space: pre-wrap;
+
+    overflow-x: auto;
+}
+
+
+/* Graus / acordes convertidos */
+
+.grau-destaque {
+    color: #38bdf8;
+
+    font-weight: 700;
+
+    font-family: "Courier New", monospace;
+
+    text-shadow:
+        0 0 8px rgba(56, 189, 248, 0.18);
+}
+
+/* ========================================
+   ACORDE FORA DO CAMPO HARMÔNICO
+======================================== */
+
+.acorde-fora-campo {
+    color: #ef4444;
+
+    font-weight: 700;
+
+    cursor: pointer;
+
+    position: relative;
+
+    text-shadow:
+        0 0 8px rgba(239, 68, 68, 0.20);
+}
+
+
+.icone-alerta {
+    color: #facc15;
+
+    font-size: 12px;
+
+    margin-right: 4px;
+
+    vertical-align: 1px;
+}
+
+/* ========================================
+   BALÃO - MANTER ACORDE
+======================================== */
+
+.pergunta-acorde {
+    position: absolute;
+
+    top: calc(100% + 12px);
+    left: 0;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+
+    gap: 8px;
+
+    min-width: 165px;
+
+    padding: 10px 12px;
+
+    background: #1e293b;
+
+    border: 1px solid rgba(248, 113, 113, 0.75);
+    border-radius: 10px;
+
+    color: #ffffff;
+
+    white-space: nowrap;
+
+    z-index: 9999;
+
+    box-shadow:
+        0 8px 25px rgba(0, 0, 0, 0.50);
+}
+
+
+/* Triângulo apontando para o acorde */
+
+.pergunta-acorde::before {
+    content: "";
+
+    position: absolute;
+
+    bottom: 100%;
+    left: 14px;
+
+    border-left: 7px solid transparent;
+    border-right: 7px solid transparent;
+    border-bottom: 7px solid #f87171;
+}
+
+
+/* Texto */
+
+.texto-pergunta {
+    display: block;
+
+    color: #ffffff;
+
+    font-size: 13px;
+    font-weight: 600;
+
+    line-height: 1.3;
+}
+
+
+/* Linha dos botões */
+
+.botoes-pergunta {
+    display: flex;
+
+    justify-content: center;
+    align-items: center;
+
+    gap: 8px;
+}
+
+
+/* Botões */
+
+.pergunta-acorde button {
+    min-width: 48px;
+
+    padding: 6px 10px;
+
+    background: rgba(255, 255, 255, 0.12);
+
+    border: 1px solid rgba(255, 255, 255, 0.28);
+    border-radius: 6px;
+
+    color: #ffffff;
+
+    font-size: 12px;
+    font-weight: 700;
+
+    cursor: pointer;
+}
+
+
+.pergunta-acorde button:hover {
+    background: rgba(255, 255, 255, 0.22);
+}

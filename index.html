@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Graus Mestre</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+<div class="container">
+
+    <h1>Graus Mestre</h1>
+
+    <p>Cole sua cifra abaixo.</p>
+
+
+    <!-- ========================================
+         CONTROLES
+    ========================================= -->
+
+    <div class="controles-topo">
+
+
+        <!-- TOM -->
+
+        <div class="controle-item">
+
+            <label>Tom da música:</label>
+
+            <div class="tom-container">
+
+                <button type="button" id="tomBotao" class="tom-botao">
+                    C
+                </button>
+
+                <div id="tomMenu" class="tom-menu">
+
+                    <div class="tom-tipo">
+                        <button type="button" class="tom-tipo-botao ativo" data-tipo-tom="maior">
+                            Maior
+                        </button>
+
+                        <button type="button" class="tom-tipo-botao" data-tipo-tom="menor">
+                            Menor
+                        </button>
+                    </div>
+
+                    <div class="lista-tons" data-lista-tom="maior">
+                        <button type="button" data-tom="C">C</button>
+                        <button type="button" data-tom="Db">Db</button>
+                        <button type="button" data-tom="D">D</button>
+                        <button type="button" data-tom="Eb">Eb</button>
+                        <button type="button" data-tom="E">E</button>
+                        <button type="button" data-tom="F">F</button>
+                        <button type="button" data-tom="F#">F#</button>
+                        <button type="button" data-tom="G">G</button>
+                        <button type="button" data-tom="Ab">Ab</button>
+                        <button type="button" data-tom="A">A</button>
+                        <button type="button" data-tom="Bb">Bb</button>
+                        <button type="button" data-tom="B">B</button>
+                    </div>
+
+                    <div class="lista-tons oculto" data-lista-tom="menor">
+                        <button type="button" data-tom="Cm">Cm</button>
+                        <button type="button" data-tom="C#m">C#m</button>
+                        <button type="button" data-tom="Dm">Dm</button>
+                        <button type="button" data-tom="Ebm">Ebm</button>
+                        <button type="button" data-tom="Em">Em</button>
+                        <button type="button" data-tom="Fm">Fm</button>
+                        <button type="button" data-tom="F#m">F#m</button>
+                        <button type="button" data-tom="Gm">Gm</button>
+                        <button type="button" data-tom="G#m">G#m</button>
+                        <button type="button" data-tom="Am">Am</button>
+                        <button type="button" data-tom="Bbm">Bbm</button>
+                        <button type="button" data-tom="Bm">Bm</button>
+                    </div>
+
+                </div>
+
+                <input type="hidden" id="tom" value="C">
+
+            </div>
+
+        </div>
+
+
+        <!-- FORMATO DOS GRAUS -->
+
+        <div class="controle-item">
+
+            <label>Formato dos graus:</label>
+
+            <div class="seletor-container">
+
+                <button type="button" id="formatoBotao" class="seletor-botao">
+                    Romano
+                </button>
+
+                <div id="formatoMenu" class="seletor-menu">
+
+                    <button type="button" data-formato="romano">
+                        Romano
+                    </button>
+
+                    <button type="button" data-formato="numero">
+                        Numérico
+                    </button>
+
+                </div>
+
+                <input type="hidden" id="formato" value="romano">
+
+            </div>
+
+        </div>
+
+
+        <!-- FORMATO DO BAIXO -->
+
+        <div class="controle-item">
+
+            <label>Formato do baixo:</label>
+
+            <div class="seletor-container">
+
+                <button type="button" id="baixoBotao" class="seletor-botao">
+                    Nota
+                </button>
+
+                <div id="baixoMenu" class="seletor-menu">
+
+                    <button type="button" data-baixo="nota">
+                        Nota
+                    </button>
+
+                    <button type="button" data-baixo="grau">
+                        Grau
+                    </button>
+
+                </div>
+
+                <input type="hidden" id="formatoBaixo" value="nota">
+
+            </div>
+
+        </div>
+
+
+    </div>
+
+    <div id="modoAnaliseMenor" class="modo-analise-menor oculto">
+        <span>Tom menor: analisar como</span>
+
+        <div class="modo-analise-botoes">
+            <button type="button" id="analiseMenor" class="ativo">
+                Campo menor
+            </button>
+
+            <button type="button" id="analiseRelativo">
+                Relativo maior
+            </button>
+        </div>
+
+        <small id="textoRelativo"></small>
+    </div>
+
+    <div id="alertaTom" class="alerta-tom oculto">
+        <span id="alertaTomTexto">
+            Parece que essa cifra não está de acordo com o tom selecionado. Deseja corrigir?
+        </span>
+
+        <span class="botoes-pergunta">
+            <button type="button" id="corrigirTomSim">Sim</button>
+            <button type="button" id="corrigirTomNao">Não</button>
+        </span>
+    </div>
+
+
+    <!-- ========================================
+         PRÉVIAS
+    ========================================= -->
+
+    <div class="preview-box">
+        <div id="previewGraus"></div>
+    </div>
+
+    <div class="preview-box">
+        <div id="previewBaixo"></div>
+    </div>
+
+
+    <!-- ========================================
+         CIFRA
+    ========================================= -->
+
+    <textarea id="entrada" placeholder="Exemplo:
+G   D   Em   C"></textarea>
+
+
+    <button id="converter">
+        Converter
+    </button>
+
+
+    <h2>Resultado</h2>
+
+
+    <div id="saida" class="saida-formatada">
+    O resultado aparecerá aqui
+</div>
+
+    <button type="button" id="copiarResultado" class="botao-copiar" aria-label="Copiar resultado">
+
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+        <rect x="9" y="9" width="10" height="10" rx="2"></rect>
+        <rect x="5" y="5" width="10" height="10" rx="2"></rect>
+    </svg>
+
+    <span class="tooltip-copiar">Copiar</span>
+
+</button>
+
+
+</div>
+
+
+<script src="acordes.js"></script>
+<script src="script.js"></script>
+
+</body>
+
+</html>
