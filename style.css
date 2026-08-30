@@ -656,27 +656,207 @@ textarea::placeholder {
 
 
 /* ========================================
-   CELULAR
+   RESPONSIVO — TABLET E CELULAR
 ======================================== */
 
-@media (max-width: 600px) {
-
+@media (max-width: 900px) {
     body {
-        margin-top: 40px;
+        margin: 32px 0 0;
+        padding: 0 16px 40px;
+        box-sizing: border-box;
+    }
+
+    .container {
+        width: 100%;
+        max-width: 760px;
+        box-sizing: border-box;
     }
 
     h1 {
-        font-size: 38px;
+        font-size: 42px;
+        margin-bottom: 10px;
     }
 
     .controles-topo {
-        gap: 15px;
+        gap: 14px;
     }
 
     .controle-item {
-        width: 120px;
+        flex: 1 1 200px;
+        width: auto;
+        max-width: 230px;
     }
 
+    .tom-botao,
+    .seletor-botao {
+        min-height: 44px;
+        min-width: 120px;
+        font-size: 15px;
+    }
+
+    .preview-box {
+        padding: 16px 12px;
+    }
+
+    textarea {
+        height: 220px;
+    }
+}
+
+@media (max-width: 600px) {
+    body {
+        margin-top: 20px;
+        padding: 0 12px 32px;
+    }
+
+    .container {
+        width: 100%;
+        max-width: none;
+    }
+
+    h1 {
+        font-size: 34px;
+        margin: 0 0 8px;
+    }
+
+    p {
+        font-size: 16px;
+        margin-bottom: 22px;
+    }
+
+    .controles-topo {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 14px;
+        width: 100%;
+        margin-top: 12px;
+        margin-bottom: 20px;
+    }
+
+    .controle-item {
+        width: 100%;
+        max-width: none;
+        align-items: stretch;
+    }
+
+    .controle-item label {
+        font-size: 14px;
+        text-align: left;
+        margin-bottom: 7px;
+    }
+
+    .tom-container,
+    .seletor-container {
+        width: 100%;
+        display: block;
+        margin: 0;
+    }
+
+    .tom-botao,
+    .seletor-botao {
+        width: 100%;
+        min-width: 0;
+        min-height: 48px;
+        padding: 12px 14px;
+        font-size: 16px;
+        border-radius: 12px;
+    }
+
+    .tom-menu,
+    .seletor-menu {
+        left: 0;
+        right: 0;
+        width: 100%;
+        min-width: 0;
+        max-width: 100%;
+        box-sizing: border-box;
+    }
+
+    .tom-menu,
+    .seletor-menu {
+        top: 54px;
+    }
+
+    .lista-tons {
+        grid-template-columns: repeat(4, 1fr);
+    }
+
+    .tom-menu button,
+    .seletor-menu button {
+        min-height: 42px;
+        font-size: 14px;
+    }
+
+    .modo-analise-menor,
+    .alerta-tom {
+        width: 100%;
+        max-width: 100%;
+        box-sizing: border-box;
+    }
+
+    .modo-analise-botoes {
+        width: 100%;
+    }
+
+    .preview-box {
+        width: 100%;
+        padding: 14px 10px;
+        box-sizing: border-box;
+        overflow: hidden;
+    }
+
+    .preview-box h3 {
+        font-size: 16px;
+        margin-bottom: 12px;
+    }
+
+    #previewGraus {
+        gap: 7px;
+    }
+
+    .grau-preview {
+        padding: 7px 9px;
+        font-size: 13px;
+    }
+
+    #previewBaixo {
+        font-size: 14px;
+    }
+
+    textarea {
+        height: 240px;
+        padding: 14px;
+        font-size: 16px;
+        line-height: 1.5;
+    }
+
+    #converter {
+        width: 100%;
+        min-height: 50px;
+        margin: 8px 0 14px;
+        font-size: 16px;
+    }
+
+    h2 {
+        font-size: 22px;
+        margin: 12px 0;
+    }
+
+    .saida-formatada {
+        min-height: 240px;
+        padding: 14px;
+        font-size: 15px;
+        line-height: 1.55;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .pergunta-acorde {
+        max-width: min(280px, 82vw);
+        min-width: 0;
+        white-space: normal;
+        box-sizing: border-box;
+    }
 }
 
 /* ========================================
