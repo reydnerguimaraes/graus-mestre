@@ -192,8 +192,18 @@ function destacarGraus(texto){
     }).join("\n");
 
 
-    const resultadoComAlertas =
+    const resultadoComGraus =
         resultado.replace(
+            /§GRAU§(.*?)§FIMGRAU§/g,
+            function(textoCompleto, grau){
+                return "<span class='grau-destaque'>" +
+                       grau +
+                       "</span>";
+            }
+        );
+
+    const resultadoComAlertas =
+        resultadoComGraus.replace(
             /§FORA§(\d+)§POS§(.*?)§FIM§/g,
             function(textoCompleto, posicao, acorde){
 
@@ -850,12 +860,17 @@ function converterCifra(
                                "§FIM§";
                     }
 
-                    return encontrarGrau(
-                        acordeNormalizado,
-                        tomAnalise,
-                        formato.value,
-                        formatoBaixo.value
-                    );
+                    const grauConvertido =
+                        encontrarGrau(
+                            acordeNormalizado,
+                            tomAnalise,
+                            formato.value,
+                            formatoBaixo.value
+                        );
+
+                    return "§GRAU§" +
+                           grauConvertido +
+                           "§FIMGRAU§";
 
                 }
             );
