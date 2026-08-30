@@ -11,7 +11,7 @@ const formato = document.getElementById("formato");
 const formatoBaixo =
     document.getElementById("formatoBaixo");
 
-    // Acordes fora do campo que o usuário
+// Acordes fora do campo que o usuário
 // decidiu manter
 
 const acordesMantidos = new Set();
@@ -52,6 +52,7 @@ let assinaturaTomIgnorada = "";
 const acordeCompleto =
 /^[A-Ga-g](?:#|b)?(?:(?:7M|maj(?:7|9|11|13)|m(?:2|4|6|7|9|11|13)?|m7(?:b5|\(b5\))|dim7?|°7?|ø7?|aug|\+|sus(?:2|4)|7sus(?:2|4)|9sus(?:2|4)|add(?:2|9|11)|(?:2|4|5|6|7|9|11|13))(?:\((?:2|4|5|6|7|7M|9|11|13|add(?:2|9|11)|(?:#|b)(?:5|9|11|13))(?:,(?:2|4|5|6|7|7M|9|11|13|add(?:2|9|11)|(?:#|b)(?:5|9|11|13)))*\))?(?:(?:#|b)(?:5|9|11|13))*)?(?:\/(?:[A-Ga-g](?:#|b)?|9))?$/i;
 
+
 function normalizarAcorde(acorde){
 
     // Coloca a nota principal em maiúscula
@@ -91,6 +92,7 @@ function normalizarAcorde(acorde){
 
 
     // Padroniza algumas grafias comuns
+
     acorde = acorde.replace(/maj7/gi, "7M");
     acorde = acorde.replace(/ø7/gi, "ø");
     acorde = acorde.replace(/m7\(b5\)/gi, "m7b5");
@@ -116,10 +118,11 @@ function destacarGraus(texto){
 
             // Grau principal:
             // I, IV, vi, ii7
+            // vi7(9), iii7(9)
             // 1, 4, 6m, 2m7
 
- const ehGrau =
-    /^(?:#|b)?(?:[ivIV]+|[1-7](?:m)?)(?:2|4|5|6|7M|7|9|11|13|add2|add9|add11|sus2|sus4|7sus2|7sus4|9sus2|9sus4|dim7?|°7?|ø|aug|\+|m7b5|\([^)]*\))?(?:\/(?:#|b)?(?:[ivIV]+|[1-7]|[A-G](?:#|b)?|9))?$/.test(parte);
+            const ehGrau =
+                /^(?:#|b)?(?:[ivIV]+|[1-7](?:m)?)(?:(?:2|4|5|6|7M|7|9|11|13|add2|add9|add11|sus2|sus4|7sus2|7sus4|9sus2|9sus4|dim7?|°7?|ø|aug|\+|m7b5)?(?:\([^)]*\))?)(?:\/(?:#|b)?(?:[ivIV]+|[1-7]|[A-G](?:#|b)?|9))?$/.test(parte);
 
 
             if(ehGrau){
@@ -127,7 +130,6 @@ function destacarGraus(texto){
                 return "<span class='grau-destaque'>" +
                        parte +
                        "</span>";
-
             }
 
 
@@ -142,8 +144,8 @@ function destacarGraus(texto){
             // V 11
             // IV 13
 
-           const ehExtensao =
-    /^(?:2|4|5|6|7|7M|9|11|13)(?:\([^)]*\))?(?:(?:#|b)(?:5|9|11|13))*$/.test(parte);
+            const ehExtensao =
+                /^(?:2|4|5|6|7|7M|9|11|13)(?:\([^)]*\))?(?:(?:#|b)(?:5|9|11|13))*$/.test(parte);
 
 
             if(ehExtensao){
@@ -159,7 +161,6 @@ function destacarGraus(texto){
                 ){
 
                     anterior--;
-
                 }
 
 
@@ -176,11 +177,8 @@ function destacarGraus(texto){
                         return "<span class='grau-destaque'>" +
                                parte +
                                "</span>";
-
                     }
-
                 }
-
             }
 
 
@@ -193,24 +191,24 @@ function destacarGraus(texto){
 
     }).join("\n");
 
-const resultadoComAlertas =
-    resultado.replace(
-        /§FORA§(\d+)§POS§(.*?)§FIM§/g,
-        function(textoCompleto, posicao, acorde){
 
-            return "<span class='acorde-fora-campo' " +
-                   "data-acorde='" + acorde + "' " +
-                   "data-posicao='" + posicao + "' " +
-                   "title='Este acorde não pertence ao campo harmônico diatônico selecionado. Confira.'>" +
-                   "<span class='icone-alerta'>⚠</span>" +
-                   acorde +
-                   "</span>";
+    const resultadoComAlertas =
+        resultado.replace(
+            /§FORA§(\d+)§POS§(.*?)§FIM§/g,
+            function(textoCompleto, posicao, acorde){
 
-        }
-    );
+                return "<span class='acorde-fora-campo' " +
+                       "data-acorde='" + acorde + "' " +
+                       "data-posicao='" + posicao + "' " +
+                       "title='Este acorde não pertence ao campo harmônico diatônico selecionado. Confira.'>" +
+                       "<span class='icone-alerta'>⚠</span>" +
+                       acorde +
+                       "</span>";
+            }
+        );
 
-return resultadoComAlertas;
 
+    return resultadoComAlertas;
 }
 
 // ========================================
@@ -222,13 +220,10 @@ saida.addEventListener("click", function(event){
     const elemento =
         event.target.closest(".acorde-fora-campo");
 
-
     if(!elemento){
         return;
     }
 
-
-    // Não abre novamente se clicar nos botões
     if(
         event.target.classList.contains("manter-sim") ||
         event.target.classList.contains("manter-nao")
@@ -236,28 +231,20 @@ saida.addEventListener("click", function(event){
         return;
     }
 
-
-    // Remove qualquer pergunta que já esteja aberta
     document
         .querySelectorAll(".pergunta-acorde")
         .forEach(function(pergunta){
-
             pergunta.remove();
-
         });
-
 
     const acorde =
         elemento.dataset.acorde;
 
-
     const pergunta =
         document.createElement("span");
 
-
     pergunta.className =
         "pergunta-acorde";
-
 
     pergunta.innerHTML =
         "<span class='texto-pergunta'>" +
@@ -277,11 +264,9 @@ saida.addEventListener("click", function(event){
 
         "</span>";
 
-
     elemento.appendChild(pergunta);
 
 });
-
 
 
 saida.addEventListener("click", function(event){
@@ -294,22 +279,15 @@ saida.addEventListener("click", function(event){
         return;
     }
 
-
     event.stopPropagation();
-
 
     const elemento =
         event.target.closest(
             ".acorde-fora-campo"
         );
 
-
     const acorde =
         elemento.dataset.acorde;
-
-
-    // Guarda que o usuário aceitou
-    // esse acorde
 
     const tomAnalise =
         obterTomDeAnalise();
@@ -317,9 +295,6 @@ saida.addEventListener("click", function(event){
     acordesMantidos.add(
         tomAnalise + "|" + acorde
     );
-
-
-    // Converte o acorde normalmente
 
     const convertido =
         encontrarGrau(
@@ -329,13 +304,13 @@ saida.addEventListener("click", function(event){
             formatoBaixo.value
         );
 
-
     elemento.outerHTML =
         "<span class='grau-destaque'>" +
         convertido +
         "</span>";
 
 });
+
 
 saida.addEventListener("click", function(event){
 
@@ -346,53 +321,34 @@ saida.addEventListener("click", function(event){
     event.preventDefault();
     event.stopPropagation();
 
-
     const elemento =
         event.target.closest(".acorde-fora-campo");
-
 
     if(!elemento){
         return;
     }
 
-
     const acorde =
         elemento.dataset.acorde;
 
-
     const pergunta =
         elemento.querySelector(".pergunta-acorde");
-
 
     if(pergunta){
         pergunta.remove();
     }
 
+    const posicao =
+        Number(elemento.dataset.posicao);
 
-    // Procura o acorde no campo onde
-    // a cifra foi digitada
-
-const posicao =
-    Number(elemento.dataset.posicao);
-
-
-  if(!Number.isNaN(posicao)){
-
-        // Leva o usuário até o campo de entrada
+    if(!Number.isNaN(posicao)){
 
         entrada.scrollIntoView({
             behavior: "smooth",
             block: "center"
         });
 
-
-        // Coloca o foco no campo
-
         entrada.focus();
-
-
-        // Seleciona exatamente o acorde
-        // para o usuário poder substituí-lo
 
         entrada.setSelectionRange(
             posicao,
@@ -400,22 +356,22 @@ const posicao =
         );
 
         const textoAntes =
-    entrada.value.substring(0, posicao);
+            entrada.value.substring(0, posicao);
 
-const quantidadeLinhas =
-    textoAntes.split("\n").length;
+        const quantidadeLinhas =
+            textoAntes.split("\n").length;
 
-const alturaLinha =
-    parseFloat(
-        getComputedStyle(entrada).lineHeight
-    );
+        const alturaLinha =
+            parseFloat(
+                getComputedStyle(entrada).lineHeight
+            );
 
-entrada.scrollTop =
-    (quantidadeLinhas - 1) * alturaLinha;
-
+        entrada.scrollTop =
+            (quantidadeLinhas - 1) * alturaLinha;
     }
 
 });
+
 
 // ------------------------------------
 // DETECÇÃO DE TOM E BOTÃO CONVERTER
@@ -430,6 +386,7 @@ const tonsMenores = [
     "Cm", "C#m", "Dm", "Ebm", "Em", "Fm",
     "F#m", "Gm", "G#m", "Am", "Bbm", "Bm"
 ];
+
 
 function obterTomDeAnalise(){
 
@@ -708,12 +665,10 @@ function atualizarOpcoesTomMenor(){
 
         textoRelativo.textContent =
             "Relativo maior: " + relativo;
-
     }
     else{
 
         textoRelativo.textContent = "";
-
     }
 
 }
@@ -986,6 +941,10 @@ analiseRelativo.addEventListener(
     }
 );
 
+
+// ========================================
+// PRÉVIA DOS GRAUS
+// ========================================
 
 function atualizarPreview(){
 
@@ -1343,6 +1302,7 @@ document.addEventListener(
 
 atualizarOpcoesTomMenor();
 
+
 // ========================================
 // SELETOR PERSONALIZADO - FORMATO
 // ========================================
@@ -1480,6 +1440,7 @@ document.addEventListener("click", function(event){
 
 });
 
+
 // ========================================
 // COPIAR RESULTADO
 // ========================================
@@ -1527,6 +1488,7 @@ copiarResultado.addEventListener("click", function(){
 
 });
 
+
 // ========================================
 // COLAR CIFRA PRESERVANDO O ALINHAMENTO
 // ========================================
@@ -1541,6 +1503,7 @@ entrada.addEventListener("paste", function(event){
 
 
     // Tenta pegar o HTML copiado do site
+
     const html = clipboard.getData("text/html");
 
 
@@ -1553,12 +1516,16 @@ entrada.addEventListener("paste", function(event){
 
 
         // Preserva quebras de linha
+
         temporario.querySelectorAll("br").forEach(function(br){
+
             br.replaceWith("\n");
+
         });
 
 
         // Tenta preservar blocos em linhas separadas
+
         temporario.querySelectorAll(
             "div, p, pre"
         ).forEach(function(elemento){
@@ -1585,21 +1552,24 @@ entrada.addEventListener("paste", function(event){
 
 
     texto = texto
-    .replace(/\u00A0/g, " ")
-    .replace(/[\u200B-\u200D\uFEFF]/g, "")
-    .replace(/">(?=[A-G](?:#|b)?)/g, "")
-    .replace(/\r/g, "")
+        .replace(/\u00A0/g, " ")
+        .replace(/[\u200B-\u200D\uFEFF]/g, "")
+        .replace(/">(?=[A-G](?:#|b)?)/g, "")
+        .replace(/\r/g, "")
 
-    // Remove o CSS que vem junto do Cifra Club
-    .replace(/body,\s*div,\s*pre,\s*p,\s*h1,\s*h2\s*\{[^}]*\}/g, "")
-    .replace(/p\s*\{[^}]*mso-[^}]*\}/g, "")
-    .replace(/b\s*\{[^}]*\}/g, "")
-    .replace(/a,\s*span\.MsoHyperlink\s*\{[^}]*\}/g, "")
+        // Remove o CSS que vem junto do Cifra Club
 
-    // Remove excesso de linhas vazias
-    .replace(/\n{3,}/g, "\n\n")
+        .replace(/body,\s*div,\s*pre,\s*p,\s*h1,\s*h2\s*\{[^}]*\}/g, "")
+        .replace(/p\s*\{[^}]*mso-[^}]*\}/g, "")
+        .replace(/b\s*\{[^}]*\}/g, "")
+        .replace(/a,\s*span\.MsoHyperlink\s*\{[^}]*\}/g, "")
 
-    .trim();
+        // Remove excesso de linhas vazias
+
+        .replace(/\n{3,}/g, "\n\n")
+
+        .trim();
+
 
     const inicio = entrada.selectionStart;
     const fim = entrada.selectionEnd;
