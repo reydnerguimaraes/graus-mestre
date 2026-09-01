@@ -2,6 +2,29 @@ const entrada = document.getElementById("entrada");
 
 const saida = document.getElementById("saida");
 
+const analiseProgressoes =
+    document.getElementById("analiseProgressoes");
+
+const listaProgressoes =
+    document.getElementById("listaProgressoes");
+
+const alternarProgressoes =
+    document.getElementById("alternarProgressoes");
+
+const textoChaveProgressoes =
+    document.getElementById("textoChaveProgressoes");
+
+const abaRoteiro =
+    document.getElementById("abaRoteiro");
+
+const abaPadroes =
+    document.getElementById("abaPadroes");
+
+let progressoesVisiveis = false;
+let haProgressoes = false;
+let modoProgressaoAtual = "roteiro";
+let secoesProgressaoAtuais = [];
+
 const botao = document.getElementById("converter");
 
 const tom = document.getElementById("tom");
@@ -51,6 +74,80 @@ let assinaturaTomIgnorada = "";
 
 const acordeCompleto =
 /^[A-Ga-g](?:#|b)?(?:(?:7M|maj(?:7|9|11|13)|m(?:2|4|6|7|9|11|13)?|m7(?:b5|\(b5\))|dim7?|°7?|ø7?|aug|\+|sus(?:2|4)|7sus(?:2|4)|9sus(?:2|4)|add(?:2|9|11)|(?:2|4|5|6|7|9|11|13))(?:\((?:2|4|5|6|7|7M|9|11|13|add(?:2|9|11)|(?:#|b)(?:5|9|11|13))(?:,(?:2|4|5|6|7|7M|9|11|13|add(?:2|9|11)|(?:#|b)(?:5|9|11|13)))*\))?(?:(?:#|b)(?:5|9|11|13))*)?(?:\/(?:[A-Ga-g](?:#|b)?|9))?$/i;
+
+
+function limparTokenDeAcorde(token){
+
+    return token
+        .trim()
+        .replace(/^[\(\[\{]+/, "")
+        .replace(/[\)\]\},;:]+$/, "");
+}
+
+
+function extrairAcordesDeLinha(linha){
+
+    const limpa =
+        linha
+            .replace(/\[[^\]]+\]/g, "")
+            .trim();
+
+    if(limpa === ""){
+        return [];
+    }
+
+    const elementos =
+        limpa.split(/\s+/);
+
+    const acordes = [];
+
+    for(let i = 0; i < elementos.length; i++){
+
+        const token =
+            limparTokenDeAcorde(
+                elementos[i]
+            );
+
+        if(token === ""){
+            continue;
+        }
+
+        if(!acordeCompleto.test(token)){
+            return [];
+        }
+
+        acordes.push(
+            normalizarAcorde(token)
+        );
+    }
+
+    return acordes;
+}
+
+
+function linhaEhDeAcordes(linha){
+
+    return (
+        extrairAcordesDeLinha(linha)
+            .length > 0
+    );
+}
+
+
+function linhaEhInstrumentalEntreParenteses(linha){
+
+    const texto =
+        linha.trim();
+
+    if(
+        !texto.startsWith("(") &&
+        !texto.endsWith(")")
+    ){
+        return false;
+    }
+
+    return linhaEhDeAcordes(texto);
+}
 
 
 function normalizarAcorde(acorde){
@@ -383,6 +480,1467 @@ saida.addEventListener("click", function(event){
 });
 
 
+// ========================================
+// ANÁLISE AUTOMÁTICA DAS PROGRESSÕES
+// ========================================
+
+function normalizarNomeSecao(texto){
+    return texto.toLowerCase()
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .replace(/[\[\]():\-–—]/g, " ")
+        .replace(/\s+/g, " ")
+        .trim();
+}
+
+function obterTituloEntreColchetes(linha){
+
+    const resultado =
+        linha.match(
+            /^\s*\[([^\]]+)\]/
+        );
+
+    return resultado
+        ? resultado[1]
+        : "";
+}
+
+
+function removerTituloSecaoDaLinha(linha){
+
+    return linha.replace(
+        /^\s*\[[^\]]+\]\s*/,
+        ""
+    );
+}
+
+
+function identificarSecao(linha){
+
+    const textoOriginal =
+        linha.trim();
+
+    if(!textoOriginal){
+        return null;
+    }
+
+    const tituloColchetes =
+        obterTituloEntreColchetes(
+            textoOriginal
+        );
+
+    // Quando há [Título], só o conteúdo dos colchetes
+    // deve ser analisado como nome da seção.
+    const base =
+        tituloColchetes ||
+        textoOriginal;
+
+    const nome =
+        normalizarNomeSecao(base);
+
+    const secoes = [
+        [/^(?:intro|introducao)(?:\s+\d+)?$/, "Introdução"],
+
+        [/^(?:primeira parte|1 parte|1a parte|parte 1|verso 1|1 verso)$/, "Primeira Parte"],
+        [/^(?:segunda parte|2 parte|2a parte|parte 2|verso 2|2 verso)$/, "Segunda Parte"],
+        [/^(?:terceira parte|3 parte|3a parte|parte 3|verso 3|3 verso)$/, "Terceira Parte"],
+
+        [/^(?:verso)(?:\s+\d+)?$/, "Verso"],
+
+        [/^(?:pre refrao)(?:\s+\d+)?$/, "Pré-Refrão"],
+
+        [/^(?:primeiro refrao|refrao 1|1 refrao)$/, "Refrão 1"],
+        [/^(?:segundo refrao|refrao 2|2 refrao)$/, "Refrão 2"],
+        [/^(?:terceiro refrao|refrao 3|3 refrao)$/, "Refrão 3"],
+        [/^(?:refrao final|final refrao)$/, "Refrão Final"],
+        [/^(?:refrao|coro)$/, "Refrão"],
+
+        [/^(?:ponte|bridge)(?:\s+\d+)?$/, "Ponte"],
+        [/^(?:solo)(?:\s+\d+)?$/, "Solo"],
+
+        [/^(?:instrumental|parte instrumental)(?:\s+\d+)?$/, "Instrumental"],
+
+        [/^(?:interludio|interlude)(?:\s+\d+)?$/, "Interlúdio"],
+
+        [/^(?:final|fim|outro|coda)(?:\s+\d+)?$/, "Final"]
+    ];
+
+    for(let i = 0; i < secoes.length; i++){
+
+        if(secoes[i][0].test(nome)){
+            return secoes[i][1];
+        }
+    }
+
+    return null;
+}
+
+
+function grauBaseNumerico(acorde, tomAnalise){
+    const convertido = encontrarGrau(acorde, tomAnalise, "numero", "grau");
+    const r = convertido.match(/^(#|b)?([1-7])/);
+    return r ? (r[1] || "") + r[2] : null;
+}
+
+function reduzirProgressaoRepetida(graus){
+
+    if(graus.length < 2){
+        return graus;
+    }
+
+    // Remove repetições consecutivas do mesmo grau.
+    const semDuplicadosConsecutivos = [];
+
+    graus.forEach(function(grau){
+
+        if(
+            semDuplicadosConsecutivos.length === 0 ||
+            semDuplicadosConsecutivos[
+                semDuplicadosConsecutivos.length - 1
+            ] !== grau
+        ){
+            semDuplicadosConsecutivos.push(grau);
+        }
+    });
+
+    const lista = semDuplicadosConsecutivos;
+
+    if(lista.length < 2){
+        return lista;
+    }
+
+    // Procura o menor ciclo que explique a sequência,
+    // mesmo quando a música termina no meio do ciclo.
+    const limite =
+        Math.min(8, lista.length);
+
+    for(let tamanho = 2; tamanho <= limite; tamanho++){
+
+        let corresponde = true;
+
+        for(let i = tamanho; i < lista.length; i++){
+
+            if(
+                lista[i] !==
+                lista[i % tamanho]
+            ){
+                corresponde = false;
+                break;
+            }
+        }
+
+        if(corresponde){
+            return lista.slice(0, tamanho);
+        }
+    }
+
+    return lista;
+}
+
+
+function rotacionarArray(array, inicio){
+
+    return array
+        .slice(inicio)
+        .concat(
+            array.slice(0, inicio)
+        );
+}
+
+
+function assinaturaCanonicaProgressao(graus){
+
+    if(graus.length === 0){
+        return "";
+    }
+
+    // Progressões cíclicas como 1-4-6-5 e 5-1-4-6
+    // representam o mesmo movimento começando em pontos diferentes.
+    const rotacoes = [];
+
+    for(let i = 0; i < graus.length; i++){
+
+        const rotacao =
+            rotacionarArray(
+                graus,
+                i
+            );
+
+        rotacoes.push(
+            rotacao.join("|")
+        );
+    }
+
+    rotacoes.sort();
+
+    return rotacoes[0];
+}
+
+
+function progressaoEhTrechoDeOutra(menor, maior){
+
+    if(
+        menor.length === 0 ||
+        maior.length === 0 ||
+        menor.length >= maior.length
+    ){
+        return false;
+    }
+
+    // Trechos muito curtos, especialmente um único grau,
+    // não devem virar uma "progressão" própria.
+    if(menor.length === 1){
+        return true;
+    }
+
+    const ciclo =
+        maior.concat(maior);
+
+    for(
+        let inicio = 0;
+        inicio < maior.length;
+        inicio++
+    ){
+
+        let combina = true;
+
+        for(
+            let i = 0;
+            i < menor.length;
+            i++
+        ){
+
+            if(
+                menor[i] !==
+                ciclo[inicio + i]
+            ){
+                combina = false;
+                break;
+            }
+        }
+
+        if(combina){
+            return true;
+        }
+    }
+
+    return false;
+}
+
+
+function normalizarSecoesParaResumo(secoes){
+
+    const normalizadas =
+        secoes.map(function(secao){
+
+            return {
+                nome: secao.nome,
+                graus:
+                    reduzirProgressaoRepetida(
+                        secao.graus
+                    )
+            };
+        });
+
+    // Descobre quais sequências são apenas trechos
+    // de uma progressão maior já identificada.
+    normalizadas.forEach(function(secao){
+
+        if(secao.graus.length === 0){
+            return;
+        }
+
+        let melhor = null;
+
+        normalizadas.forEach(function(candidata){
+
+            if(candidata === secao){
+                return;
+            }
+
+            if(
+                progressaoEhTrechoDeOutra(
+                    secao.graus,
+                    candidata.graus
+                )
+            ){
+
+                if(
+                    !melhor ||
+                    candidata.graus.length <
+                    melhor.graus.length
+                ){
+                    melhor = candidata;
+                }
+            }
+        });
+
+        if(melhor){
+            secao.graus = melhor.graus.slice();
+        }
+    });
+
+    return normalizadas;
+}
+
+
+function extrairProgressoesPorSecao(texto, tomAnalise){
+
+    const linhas =
+        texto.split("\n");
+
+    const secoes = [];
+
+    let secaoAtual = null;
+    let nomeSecaoAtual = "";
+
+    let contadorInstrumental = 0;
+
+    function criarSecao(nome){
+
+        secaoAtual = {
+            nome: nome,
+            graus: []
+        };
+
+        nomeSecaoAtual = nome;
+
+        secoes.push(secaoAtual);
+
+        return secaoAtual;
+    }
+
+
+    function adicionarAcordes(
+        acordes,
+        destino = secaoAtual
+    ){
+
+        if(
+            !destino ||
+            acordes.length === 0
+        ){
+            return;
+        }
+
+        acordes.forEach(function(acorde){
+
+            const grau =
+                grauBaseNumerico(
+                    acorde,
+                    tomAnalise
+                );
+
+            if(grau){
+                destino.graus.push(grau);
+            }
+        });
+    }
+
+
+    function linhaTemLetra(linha){
+
+        const limpa =
+            removerTituloSecaoDaLinha(
+                linha
+            ).trim();
+
+        if(limpa === ""){
+            return false;
+        }
+
+        return (
+            extrairAcordesDeLinha(
+                limpa
+            ).length === 0
+        );
+    }
+
+
+    function proximaLinhaSignificativa(indiceAtual){
+
+        for(
+            let i = indiceAtual + 1;
+            i < linhas.length;
+            i++
+        ){
+
+            if(linhas[i].trim() === ""){
+                continue;
+            }
+
+            const titulo =
+                identificarSecao(
+                    linhas[i]
+                );
+
+            const semTitulo =
+                removerTituloSecaoDaLinha(
+                    linhas[i]
+                );
+
+            const acordes =
+                extrairAcordesDeLinha(
+                    semTitulo
+                );
+
+            return {
+                indice: i,
+                linha: linhas[i],
+                titulo: titulo,
+                acordes: acordes,
+                letra:
+                    !titulo &&
+                    acordes.length === 0 &&
+                    linhaTemLetra(
+                        linhas[i]
+                    )
+            };
+        }
+
+        return null;
+    }
+
+
+    function anteriorSignificativo(indiceAtual){
+
+        for(
+            let i = indiceAtual - 1;
+            i >= 0;
+            i--
+        ){
+
+            if(linhas[i].trim() === ""){
+                continue;
+            }
+
+            const titulo =
+                identificarSecao(
+                    linhas[i]
+                );
+
+            const semTitulo =
+                removerTituloSecaoDaLinha(
+                    linhas[i]
+                );
+
+            const acordes =
+                extrairAcordesDeLinha(
+                    semTitulo
+                );
+
+            return {
+                indice: i,
+                linha: linhas[i],
+                titulo: titulo,
+                acordes: acordes,
+                letra:
+                    !titulo &&
+                    acordes.length === 0 &&
+                    linhaTemLetra(
+                        linhas[i]
+                    )
+            };
+        }
+
+        return null;
+    }
+
+
+    function iniciarInstrumentalAutomatico(){
+
+        contadorInstrumental++;
+
+        return criarSecao(
+            "Instrumental " +
+            contadorInstrumental
+        );
+    }
+
+
+    for(let indice = 0; indice < linhas.length; indice++){
+
+        const linhaOriginal =
+            linhas[indice];
+
+        const titulo =
+            identificarSecao(
+                linhaOriginal
+            );
+
+        const linhaSemTitulo =
+            removerTituloSecaoDaLinha(
+                linhaOriginal
+            );
+
+        const acordesLinha =
+            extrairAcordesDeLinha(
+                linhaSemTitulo
+            );
+
+
+        // ------------------------------------------------
+        // TÍTULO EXPLÍCITO SEMPRE TEM PRIORIDADE
+        // ------------------------------------------------
+
+        if(titulo){
+
+            criarSecao(
+                titulo
+            );
+
+            // Ex.:
+            // [Intro] F G C Am
+            // [Introdução] ( F G C Am )
+            // Os acordes da mesma linha pertencem à seção.
+            if(acordesLinha.length > 0){
+
+                adicionarAcordes(
+                    acordesLinha
+                );
+            }
+
+            continue;
+        }
+
+
+        // ------------------------------------------------
+        // LINHA DE ACORDES
+        // ------------------------------------------------
+
+        if(acordesLinha.length > 0){
+
+            const proxima =
+                proximaLinhaSignificativa(
+                    indice
+                );
+
+            const anterior =
+                anteriorSignificativo(
+                    indice
+                );
+
+            const acompanhaLetra =
+                proxima &&
+                proxima.letra;
+
+
+            // --------------------------------------------
+            // INTRODUÇÃO -> PRIMEIRA PARTE
+            // --------------------------------------------
+            //
+            // Se há uma Introdução explícita e surge uma nova
+            // linha de acordes imediatamente associada à letra,
+            // essa linha já pertence à Primeira Parte.
+            //
+            // Ex.:
+            // [Intro] F G C/E Am G
+            //
+            // Am G
+            // Teu fogo arde em mim
+            //
+            // Intro: 4 5 1 6 5
+            // Primeira Parte começa em: 6 5
+
+            if(
+                nomeSecaoAtual === "Introdução" &&
+                acompanhaLetra
+            ){
+
+                criarSecao(
+                    "Primeira Parte"
+                );
+
+                adicionarAcordes(
+                    acordesLinha
+                );
+
+                continue;
+            }
+
+
+            // --------------------------------------------
+            // CIFRA SEM TÍTULO INICIAL
+            // --------------------------------------------
+
+            if(!secaoAtual){
+
+                if(acompanhaLetra){
+
+                    criarSecao(
+                        "Primeira Parte"
+                    );
+
+                }else{
+
+                    criarSecao(
+                        "Introdução"
+                    );
+                }
+
+                adicionarAcordes(
+                    acordesLinha
+                );
+
+                continue;
+            }
+
+
+            // --------------------------------------------
+            // BLOCO INSTRUMENTAL / PASSAGEM SEM TÍTULO
+            // --------------------------------------------
+            //
+            // Não depende de parênteses.
+            // Uma sequência isolada de acordes entre trechos
+            // cantados/seções pode ser inferida como instrumental.
+            //
+            // Parênteses apenas delimitam visualmente a sequência.
+
+            const proximaEhTitulo =
+                proxima &&
+                proxima.titulo;
+
+            const anteriorEraLetra =
+                anterior &&
+                anterior.letra;
+
+            const blocoIsolado =
+                !acompanhaLetra &&
+                (
+                    proximaEhTitulo ||
+                    anteriorEraLetra
+                );
+
+            if(
+                blocoIsolado &&
+                nomeSecaoAtual !== "Introdução" &&
+                nomeSecaoAtual !== "Instrumental"
+            ){
+
+                iniciarInstrumentalAutomatico();
+
+                adicionarAcordes(
+                    acordesLinha
+                );
+
+                // Agrupa outras linhas consecutivas de acordes
+                // que também não acompanham letra.
+                while(
+                    indice + 1 < linhas.length
+                ){
+
+                    const proximaLinha =
+                        linhas[indice + 1];
+
+                    if(proximaLinha.trim() === ""){
+                        break;
+                    }
+
+                    if(
+                        identificarSecao(
+                            proximaLinha
+                        )
+                    ){
+                        break;
+                    }
+
+                    const acordesProximaLinha =
+                        extrairAcordesDeLinha(
+                            removerTituloSecaoDaLinha(
+                                proximaLinha
+                            )
+                        );
+
+                    if(
+                        acordesProximaLinha.length === 0
+                    ){
+                        break;
+                    }
+
+                    const depois =
+                        proximaLinhaSignificativa(
+                            indice + 1
+                        );
+
+                    if(
+                        depois &&
+                        depois.letra
+                    ){
+                        break;
+                    }
+
+                    indice++;
+
+                    adicionarAcordes(
+                        acordesProximaLinha
+                    );
+                }
+
+                secaoAtual = null;
+                nomeSecaoAtual = "";
+
+                continue;
+            }
+
+
+            // --------------------------------------------
+            // ACORDES NORMAIS DA SEÇÃO ATUAL
+            // --------------------------------------------
+
+            adicionarAcordes(
+                acordesLinha
+            );
+
+            continue;
+        }
+
+
+        // ------------------------------------------------
+        // LINHAS DE LETRA NÃO MUDAM A SEÇÃO SOZINHAS
+        // ------------------------------------------------
+    }
+
+
+    // O Roteiro recebe a sequência BRUTA de cada seção.
+    // Nenhuma seção pode herdar ou ser substituída
+    // por progressões de outras partes da música.
+    return secoes.filter(function(secao){
+        return secao.graus.length > 0;
+    });
+}
+
+
+function escaparHtml(texto){
+    return String(texto)
+        .replace(/&/g,"&amp;").replace(/</g,"&lt;")
+        .replace(/>/g,"&gt;").replace(/"/g,"&quot;")
+        .replace(/'/g,"&#039;");
+}
+
+function encontrarMenorCicloDaSecao(graus){
+
+    if(graus.length < 2){
+        return {
+            graus: graus.slice(),
+            repeticoes: 1,
+            restante: []
+        };
+    }
+
+    const maximo =
+        Math.min(
+            8,
+            Math.floor(graus.length / 2)
+        );
+
+    let melhor = null;
+
+    for(let tamanho = 2; tamanho <= maximo; tamanho++){
+
+        const ciclo =
+            graus.slice(0, tamanho);
+
+        let indice = 0;
+
+        while(
+            indice < graus.length &&
+            graus[indice] ===
+            ciclo[indice % tamanho]
+        ){
+            indice++;
+        }
+
+        const ciclosCompletos =
+            Math.floor(indice / tamanho);
+
+        if(ciclosCompletos >= 2){
+
+            const candidato = {
+                graus: ciclo,
+                repeticoes: ciclosCompletos,
+                restante:
+                    graus.slice(
+                        ciclosCompletos * tamanho
+                    )
+            };
+
+            if(
+                !melhor ||
+                candidato.graus.length <
+                melhor.graus.length
+            ){
+                melhor = candidato;
+            }
+        }
+    }
+
+    if(melhor){
+        return melhor;
+    }
+
+    return {
+        graus:
+            graus.slice(
+                0,
+                Math.min(8, graus.length)
+            ),
+        repeticoes: 1,
+        restante:
+            graus.length > 8
+                ? graus.slice(8)
+                : []
+    };
+}
+
+
+function dividirSecaoEmBlocos(graus){
+
+    if(graus.length === 0){
+        return [];
+    }
+
+    const blocos = [];
+    let restante = graus.slice();
+
+    while(restante.length > 0){
+
+        const analise =
+            encontrarMenorCicloDaSecao(
+                restante
+            );
+
+        if(analise.graus.length === 0){
+            break;
+        }
+
+        blocos.push({
+            graus: analise.graus,
+            repeticoes:
+                analise.repeticoes
+        });
+
+        if(
+            analise.repeticoes === 1 &&
+            analise.restante.length ===
+            restante.length
+        ){
+            break;
+        }
+
+        restante =
+            analise.restante;
+
+        if(blocos.length >= 4){
+            break;
+        }
+    }
+
+    return blocos;
+}
+
+
+function assinaturaBlocos(blocos){
+
+    return blocos.map(function(bloco){
+
+        return (
+            bloco.graus.join("|") +
+            "x" +
+            bloco.repeticoes
+        );
+
+    }).join(";");
+}
+
+
+function prepararRoteiro(secoes){
+
+    const roteiro = [];
+    const ultimaAssinaturaPorNome =
+        new Map();
+
+    secoes.forEach(function(secao, indice){
+
+        const blocos =
+            dividirSecaoEmBlocos(
+                secao.graus
+            );
+
+        if(blocos.length === 0){
+            return;
+        }
+
+        const assinatura =
+            assinaturaBlocos(
+                blocos
+            );
+
+        const chaveNome =
+            secao.nome;
+
+        const repetida =
+            ultimaAssinaturaPorNome.get(
+                chaveNome
+            ) === assinatura;
+
+        roteiro.push({
+            nome: secao.nome,
+            blocos: blocos,
+            repetida: repetida,
+            ordem: indice
+        });
+
+        ultimaAssinaturaPorNome.set(
+            chaveNome,
+            assinatura
+        );
+    });
+
+    return roteiro;
+}
+
+
+function renderizarRoteiro(secoes){
+
+    const roteiro =
+        prepararRoteiro(
+            secoes
+        );
+
+    if(roteiro.length === 0){
+
+        return (
+            "<div class='progressao-vazia'>" +
+            "Nenhuma seção com progressão foi identificada." +
+            "</div>"
+        );
+    }
+
+    let html =
+        "<div class='lista-progressoes roteiro-musica'>";
+
+    roteiro.forEach(function(item){
+
+        html +=
+            "<div class='progressao-item roteiro-item'>" +
+                "<span class='progressao-titulo'>" +
+                    escaparHtml(item.nome) +
+                "</span>";
+
+        if(item.repetida){
+
+            html +=
+                "<span class='roteiro-repeticao-secao'>" +
+                    "Mesma progressão da ocorrência anterior" +
+                "</span>";
+
+        }else{
+
+            item.blocos.forEach(
+                function(bloco, indice){
+
+                    html +=
+                        "<div class='roteiro-bloco'>" +
+
+                            (
+                                item.blocos.length > 1
+                                    ? "<span class='roteiro-letra'>" +
+                                      String.fromCharCode(65 + indice) +
+                                      "</span>"
+                                    : ""
+                            ) +
+
+                            "<span class='progressao-graus'>" +
+                                escaparHtml(
+                                    bloco.graus.join(" – ")
+                                ) +
+                            "</span>" +
+
+                            (
+                                bloco.repeticoes > 1
+                                    ? "<span class='roteiro-vezes'>×" +
+                                      bloco.repeticoes +
+                                      "</span>"
+                                    : ""
+                            ) +
+
+                        "</div>";
+                }
+            );
+        }
+
+        html += "</div>";
+    });
+
+    html += "</div>";
+
+    return html;
+}
+
+
+function renderizarPadroes(secoes){
+
+    const secoesParaPadroes =
+        normalizarSecoesParaResumo(
+            secoes
+        );
+
+    const padroes =
+        encontrarProgressaoPrincipal(
+            secoesParaPadroes
+        );
+
+    if(padroes.length === 0){
+
+        return (
+            "<div class='progressao-vazia'>" +
+            "Nenhum padrão recorrente foi identificado." +
+            "</div>"
+        );
+    }
+
+    let html =
+        "<div class='lista-progressoes'>";
+
+    padroes.forEach(function(padrao, indice){
+
+        const titulo =
+            indice === 0
+                ? "Progressão principal"
+                : "Padrão " + (indice + 1);
+
+        const partes =
+            Array.from(
+                padrao.secoes
+            ).join(", ");
+
+        html +=
+            "<div class='progressao-item'>" +
+
+                "<div class='progressao-cabecalho'>" +
+                    "<span class='progressao-titulo'>" +
+                        escaparHtml(titulo) +
+                    "</span>" +
+
+                    "<span class='progressao-frequencia'>" +
+                        escaparHtml(
+                            padrao.ocorrencias + "×"
+                        ) +
+                    "</span>" +
+                "</div>" +
+
+                "<span class='progressao-graus'>" +
+                    escaparHtml(
+                        padrao.graus.join(" – ")
+                    ) +
+                "</span>" +
+
+                "<span class='progressao-partes'>" +
+                    "Aparece em: " +
+                    escaparHtml(partes) +
+                "</span>" +
+
+            "</div>";
+    });
+
+    html += "</div>";
+
+    return html;
+}
+
+
+function renderizarModoProgressao(){
+
+    abaRoteiro.classList.toggle(
+        "ativo",
+        modoProgressaoAtual === "roteiro"
+    );
+
+    abaPadroes.classList.toggle(
+        "ativo",
+        modoProgressaoAtual === "padroes"
+    );
+
+    if(modoProgressaoAtual === "roteiro"){
+
+        listaProgressoes.innerHTML =
+            renderizarRoteiro(
+                secoesProgressaoAtuais
+            );
+
+    }else{
+
+        listaProgressoes.innerHTML =
+            renderizarPadroes(
+                secoesProgressaoAtuais
+            );
+    }
+}
+
+
+function sequenciasIguais(a, b){
+
+    if(a.length !== b.length){
+        return false;
+    }
+
+    for(let i = 0; i < a.length; i++){
+
+        if(a[i] !== b[i]){
+            return false;
+        }
+    }
+
+    return true;
+}
+
+
+function chaveSequencia(graus){
+
+    return graus.join("|");
+}
+
+
+function contarOcorrenciasPadroes(secoes){
+
+    const mapa = new Map();
+
+    // Trabalhamos com janelas de 3 a 8 graus.
+    // Isso evita tratar movimentos muito curtos como
+    // uma progressão importante e também evita caixas enormes.
+    secoes.forEach(function(secao){
+
+        const graus = secao.graus;
+
+        if(graus.length < 3){
+            return;
+        }
+
+        const maximo =
+            Math.min(8, graus.length);
+
+        for(let tamanho = 3; tamanho <= maximo; tamanho++){
+
+            for(
+                let inicio = 0;
+                inicio <= graus.length - tamanho;
+                inicio++
+            ){
+
+                const trecho =
+                    graus.slice(
+                        inicio,
+                        inicio + tamanho
+                    );
+
+                const chave =
+                    chaveSequencia(trecho);
+
+                if(!mapa.has(chave)){
+
+                    mapa.set(chave, {
+                        graus: trecho,
+                        ocorrencias: 0,
+                        secoes: new Set()
+                    });
+                }
+
+                const item =
+                    mapa.get(chave);
+
+                item.ocorrencias++;
+                item.secoes.add(secao.nome);
+            }
+        }
+    });
+
+    return Array.from(
+        mapa.values()
+    );
+}
+
+
+function padraoContemPadrao(maior, menor){
+
+    if(maior.length <= menor.length){
+        return false;
+    }
+
+    for(
+        let inicio = 0;
+        inicio <= maior.length - menor.length;
+        inicio++
+    ){
+
+        let igual = true;
+
+        for(
+            let i = 0;
+            i < menor.length;
+            i++
+        ){
+
+            if(
+                maior[inicio + i] !==
+                menor[i]
+            ){
+                igual = false;
+                break;
+            }
+        }
+
+        if(igual){
+            return true;
+        }
+    }
+
+    return false;
+}
+
+
+function pontuarPadrao(padrao){
+
+    const tamanho =
+        padrao.graus.length;
+
+    const repeticoes =
+        padrao.ocorrencias;
+
+    const quantidadeSecoes =
+        padrao.secoes.size;
+
+    // Frequência pesa mais, mas sequências maiores
+    // recebem bônus para evitar mostrar somente fragmentos.
+    return (
+        repeticoes * 10 +
+        quantidadeSecoes * 5 +
+        tamanho * 2
+    );
+}
+
+
+function selecionarPadroesRelevantes(secoes){
+
+    const candidatos =
+        contarOcorrenciasPadroes(
+            secoes
+        )
+        .filter(function(item){
+
+            // Um padrão precisa aparecer ao menos duas vezes.
+            return item.ocorrencias >= 2;
+        })
+        .sort(function(a, b){
+
+            const diferenca =
+                pontuarPadrao(b) -
+                pontuarPadrao(a);
+
+            if(diferenca !== 0){
+                return diferenca;
+            }
+
+            return (
+                b.graus.length -
+                a.graus.length
+            );
+        });
+
+    const escolhidos = [];
+
+    candidatos.forEach(function(candidato){
+
+        // Não adiciona uma sequência se ela for apenas
+        // um fragmento redundante de outra já escolhida
+        // com frequência semelhante.
+        const redundante =
+            escolhidos.some(function(escolhido){
+
+                if(
+                    padraoContemPadrao(
+                        escolhido.graus,
+                        candidato.graus
+                    ) &&
+                    escolhido.ocorrencias >=
+                    candidato.ocorrencias - 1
+                ){
+                    return true;
+                }
+
+                if(
+                    sequenciasIguais(
+                        escolhido.graus,
+                        candidato.graus
+                    )
+                ){
+                    return true;
+                }
+
+                return false;
+            });
+
+        if(redundante){
+            return;
+        }
+
+        escolhidos.push(candidato);
+    });
+
+    // Interface compacta: no máximo 4 padrões relevantes.
+    return escolhidos.slice(0, 4);
+}
+
+
+function encontrarProgressaoPrincipal(secoes){
+
+    const padroes =
+        selecionarPadroesRelevantes(
+            secoes
+        );
+
+    // Se nenhuma sequência se repetiu duas vezes,
+    // usamos a progressão resumida mais representativa,
+    // desde que tenha pelo menos três graus.
+    if(padroes.length === 0){
+
+        const alternativas =
+            secoes
+                .filter(function(secao){
+                    return secao.graus.length >= 3;
+                })
+                .sort(function(a, b){
+                    return b.graus.length - a.graus.length;
+                });
+
+        if(alternativas.length > 0){
+
+            return [{
+                graus:
+                    alternativas[0].graus.slice(
+                        0,
+                        Math.min(
+                            8,
+                            alternativas[0].graus.length
+                        )
+                    ),
+                ocorrencias: 1,
+                secoes:
+                    new Set([
+                        alternativas[0].nome
+                    ])
+            }];
+        }
+    }
+
+    return padroes;
+}
+
+
+function escaparHtml(texto){
+    return String(texto)
+        .replace(/&/g,"&amp;").replace(/</g,"&lt;")
+        .replace(/>/g,"&gt;").replace(/"/g,"&quot;")
+        .replace(/'/g,"&#039;");
+}
+
+function atualizarEstadoChaveProgressoes(){
+
+    alternarProgressoes.classList.toggle(
+        "ativo",
+        progressoesVisiveis
+    );
+
+    alternarProgressoes.setAttribute(
+        "aria-checked",
+        progressoesVisiveis
+            ? "true"
+            : "false"
+    );
+
+    textoChaveProgressoes.textContent =
+        progressoesVisiveis
+            ? "Ocultar progressões"
+            : "Mostrar progressões";
+}
+
+
+function mostrarProgressoes(texto,tomAnalise){
+
+    const secoes =
+        extrairProgressoesPorSecao(
+            texto,
+            tomAnalise
+        );
+
+    secoesProgressaoAtuais =
+        secoes;
+
+    haProgressoes =
+        secoes.length > 0;
+
+    if(!haProgressoes){
+
+        analiseProgressoes.classList.add(
+            "oculto"
+        );
+
+        listaProgressoes.innerHTML = "";
+
+        alternarProgressoes.disabled = true;
+
+        progressoesVisiveis = false;
+
+        atualizarEstadoChaveProgressoes();
+
+        return;
+    }
+
+    alternarProgressoes.disabled = false;
+
+    renderizarModoProgressao();
+
+    analiseProgressoes.classList.toggle(
+        "oculto",
+        !progressoesVisiveis
+    );
+
+    atualizarEstadoChaveProgressoes();
+}
+
+
+abaRoteiro.addEventListener("click", function(){
+
+    modoProgressaoAtual = "roteiro";
+
+    renderizarModoProgressao();
+});
+
+
+abaPadroes.addEventListener("click", function(){
+
+    modoProgressaoAtual = "padroes";
+
+    renderizarModoProgressao();
+});
+
+
+alternarProgressoes.addEventListener("click", function(){
+
+    if(!haProgressoes){
+        return;
+    }
+
+    progressoesVisiveis =
+        !progressoesVisiveis;
+
+    analiseProgressoes.classList.toggle(
+        "oculto",
+        !progressoesVisiveis
+    );
+
+    atualizarEstadoChaveProgressoes();
+});
+
 // ------------------------------------
 // DETECÇÃO DE TOM E BOTÃO CONVERTER
 // ------------------------------------
@@ -427,34 +1985,11 @@ function extrairAcordesDaCifra(texto){
 
     texto.split("\n").forEach(function(linha){
 
-        const semTitulo =
-            linha.replace(/\[[^\]]+\]/g, "").trim();
+        const encontrados =
+            extrairAcordesDeLinha(linha);
 
-        if(semTitulo === ""){
-            return;
-        }
-
-        const elementos =
-            semTitulo.split(/\s+/);
-
-        const linhaDeAcordes =
-            elementos.every(function(elemento){
-                return acordeCompleto.test(elemento);
-            });
-
-        if(!linhaDeAcordes){
-            return;
-        }
-
-        elementos.forEach(function(acorde){
-
-            const normalizado =
-                normalizarAcorde(acorde);
-
-            if(acordeCompleto.test(normalizado)){
-                acordes.push(normalizado);
-            }
-
+        encontrados.forEach(function(acorde){
+            acordes.push(acorde);
         });
 
     });
@@ -786,44 +2321,30 @@ function converterCifra(
             posicaoGlobal +=
                 linha.length + 1;
 
-            const semTitulo =
-                linha.replace(
-                    /\[[^\]]+\]/g,
-                    ""
-                ).trim();
-
-            if(semTitulo === ""){
-                return linha;
-            }
-
-            const elementos =
-                semTitulo.split(/\s+/);
-
-            const linhaDeAcordes =
-                elementos.every(
-                    function(elemento){
-
-                        return acordeCompleto.test(
-                            elemento
-                        );
-
-                    }
+            const acordesLinha =
+                extrairAcordesDeLinha(
+                    linha
                 );
 
-            if(!linhaDeAcordes){
+            if(acordesLinha.length === 0){
                 return linha;
             }
 
             return linha.replace(
-                /[A-Ga-g](?:#|b)?[^\s\]]*/g,
+                /[A-Ga-g](?:#|b)?[^\s\]\)\},;:]*/g,
                 function(
                     acorde,
                     deslocamento
                 ){
 
+                    const acordeLimpo =
+                        limparTokenDeAcorde(
+                            acorde
+                        );
+
                     const acordeNormalizado =
                         normalizarAcorde(
-                            acorde
+                            acordeLimpo
                         );
 
                     if(
@@ -879,6 +2400,11 @@ function converterCifra(
 
     saida.innerHTML =
         destacarGraus(resultado);
+
+    mostrarProgressoes(
+        texto,
+        tomAnalise
+    );
 
 }
 

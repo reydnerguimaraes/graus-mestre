@@ -191,6 +191,38 @@
         <div id="previewBaixo"></div>
     </div>
 
+    <div class="controle-progressoes">
+        <button type="button"
+                id="alternarProgressoes"
+                class="chave-progressoes"
+                role="switch"
+                aria-checked="false">
+            <span class="trilho-chave">
+                <span class="bolinha-chave"></span>
+            </span>
+
+            <span id="textoChaveProgressoes" class="texto-chave-progressoes">
+                Mostrar progressões
+            </span>
+        </button>
+    </div>
+
+    <div id="analiseProgressoes" class="analise-progressoes oculto">
+        <h2>Progressões da música</h2>
+
+        <div class="abas-progressao">
+            <button type="button" id="abaRoteiro" class="aba-progressao ativo">
+                Roteiro
+            </button>
+
+            <button type="button" id="abaPadroes" class="aba-progressao">
+                Padrões
+            </button>
+        </div>
+
+        <div id="listaProgressoes"></div>
+    </div>
+
 
     <!-- ========================================
          CIFRA
