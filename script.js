@@ -78,10 +78,38 @@ const acordeCompleto =
 
 function limparTokenDeAcorde(token){
 
-    return token
-        .trim()
-        .replace(/^[\(\[\{]+/, "")
-        .replace(/[\)\]\},;:]+$/, "");
+    let limpo = token.trim();
+
+    // Remove pontuação/agrupadores externos sem destruir
+    // parênteses que fazem parte do acorde.
+    // Ex.:
+    // ( F )   -> F
+    // A7(4)   -> A7(4)
+    // D7(b9)  -> D7(b9)
+
+    limpo = limpo
+        .replace(/^[\[\{]+/, "")
+        .replace(/[\]\},;:]+$/, "");
+
+    // Parêntese abrindo antes do acorde é apenas agrupador.
+    while(limpo.startsWith("(")){
+        limpo = limpo.substring(1).trim();
+    }
+
+    // Remove somente parênteses fechando que estejam sobrando.
+    // Se os parênteses estiverem balanceados, eles pertencem ao acorde.
+    function contar(texto, caractere){
+        return texto.split(caractere).length - 1;
+    }
+
+    while(
+        limpo.endsWith(")") &&
+        contar(limpo, ")") > contar(limpo, "(")
+    ){
+        limpo = limpo.substring(0, limpo.length - 1).trim();
+    }
+
+    return limpo;
 }
 
 
@@ -577,9 +605,43 @@ function identificarSecao(linha){
 
 
 function grauBaseNumerico(acorde, tomAnalise){
-    const convertido = encontrarGrau(acorde, tomAnalise, "numero", "grau");
-    const r = convertido.match(/^(#|b)?([1-7])/);
-    return r ? (r[1] || "") + r[2] : null;
+
+    const acordeNormalizado = normalizarAcorde(acorde);
+
+    const partes = acordeNormalizado.match(
+        /^([A-G](?:#|b)?)(.*)$/
+    );
+
+    if(!partes){
+        return null;
+    }
+
+    const fundamental = partes[1];
+    const complemento = partes[2] || "";
+
+    // Converte somente a fundamental para descobrir o grau.
+    const convertidoFundamental = encontrarGrau(
+        fundamental,
+        tomAnalise,
+        "numero",
+        "grau"
+    );
+
+    const r = convertidoFundamental.match(/^(#|b)?([1-7])/);
+
+    if(!r){
+        return null;
+    }
+
+    // A qualidade menor vem diretamente do acorde original.
+    // Assim Gm não vira 1 no Roteiro.
+    const ehMenor = /^m(?!aj)/.test(complemento);
+
+    return (
+        (r[1] || "") +
+        r[2] +
+        (ehMenor ? "m" : "")
+    );
 }
 
 function reduzirProgressaoRepetida(graus){
@@ -2331,7 +2393,7 @@ function converterCifra(
             }
 
             return linha.replace(
-                /[A-Ga-g](?:#|b)?[^\s\]\)\},;:]*/g,
+                /[A-Ga-g](?:#|b)?[^\s\]\},;:]*/g,
                 function(
                     acorde,
                     deslocamento
